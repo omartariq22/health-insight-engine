@@ -1,12 +1,12 @@
 Dataset: Healthmov Health Logs
-Ingested: 2026-05-05 13:39:11
+Ingested: 2026-05-05 22:54:08
 Source: data/health_logs.csv
 
 STRUCTURE:
 -----------
 Total Records: 1500
 Total Users: 50
-Date Range: 2026-04-05 to 2026-05-04
+Date Range: 2026-04-01 to 2026-04-30
 Days per User: 30
 
 COLUMNS:
@@ -20,15 +20,15 @@ COLUMNS:
 GLOBAL STATISTICS:
 -----------
 Steps:
-  Mean: 7159
-  Std:  2320
+  Mean: 7277
+  Std:  2338
   Min:  0
   Max:  15852
 
 Sleep Hours:
-  Mean: 7.4
+  Mean: 7.5
   Std:  1.0
-  Min:  4.3
+  Min:  4.0
   Max:  10.7
 
 Heart Rate:
@@ -39,8 +39,8 @@ Heart Rate:
 
 PER-USER AVERAGES (summary):
 -----------
-Avg Steps Range:  6348 - 8198
-Avg Sleep Range:  7.0 - 7.8
+Avg Steps Range:  6600 - 8278
+Avg Sleep Range:  7.1 - 7.8
 Avg HR Range:     70 - 76
 
 ANOMALIES:

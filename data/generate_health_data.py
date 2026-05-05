@@ -63,9 +63,10 @@ def generate_anomaly_user_data(user_id, start_date, num_days):
     """Generate health data with intentional 40%+ activity drop."""
     data = []
     
-    # Choose when the drop occurs (between day 10 and day 20)
-    drop_start_day = random.randint(10, 20)
-    drop_duration = random.randint(3, 7)  # Drop lasts 3-7 days
+    # Choose when the drop occurs (in the last 3-7 days to match detection window)
+    # Detection looks at last 3 days, so drop should end within that window
+    drop_start_day = num_days - random.randint(3, 7)  # Start 3-7 days from end
+    drop_duration = random.randint(3, 5)  # Drop lasts 3-5 days
     
     for day in range(num_days):
         date = start_date + timedelta(days=day)

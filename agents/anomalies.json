@@ -1,0 +1,62 @@
+{
+  "detection_time": "2026-05-05T22:56:21.380433",
+  "total_users": 50,
+  "anomalies_detected": 5,
+  "anomalies": [
+    {
+      "user_id": "user_001",
+      "metric": "steps",
+      "baseline_avg": 6880.9,
+      "baseline_period": "2026-04-21 to 2026-04-27",
+      "recent_avg": 4117.3,
+      "recent_period": "2026-04-28 to 2026-04-30",
+      "drop_percentage": 40.2,
+      "severity": "moderate",
+      "detected_at": "2026-05-05T22:56:16.855489"
+    },
+    {
+      "user_id": "user_002",
+      "metric": "steps",
+      "baseline_avg": 8551.3,
+      "baseline_period": "2026-04-21 to 2026-04-27",
+      "recent_avg": 4408.3,
+      "recent_period": "2026-04-28 to 2026-04-30",
+      "drop_percentage": 48.4,
+      "severity": "moderate",
+      "detected_at": "2026-05-05T22:56:16.954952"
+    },
+    {
+      "user_id": "user_003",
+      "metric": "steps",
+      "baseline_avg": 7909.4,
+      "baseline_period": "2026-04-21 to 2026-04-27",
+      "recent_avg": 3143.0,
+      "recent_period": "2026-04-28 to 2026-04-30",
+      "drop_percentage": 60.3,
+      "severity": "severe",
+      "detected_at": "2026-05-05T22:56:17.057002"
+    },
+    {
+      "user_id": "user_008",
+      "metric": "steps",
+      "baseline_avg": 6804.3,
+      "baseline_period": "2026-04-21 to 2026-04-27",
+      "recent_avg": 4006.7,
+      "recent_period": "2026-04-28 to 2026-04-30",
+      "drop_percentage": 41.1,
+      "severity": "moderate",
+      "detected_at": "2026-05-05T22:56:17.551770"
+    },
+    {
+      "user_id": "user_009",
+      "metric": "steps",
+      "baseline_avg": 7689.4,
+      "baseline_period": "2026-04-21 to 2026-04-27",
+      "recent_avg": 2882.7,
+      "recent_period": "2026-04-28 to 2026-04-30",
+      "drop_percentage": 62.5,
+      "severity": "severe",
+      "detected_at": "2026-05-05T22:56:17.637634"
+    }
+  ]
+}

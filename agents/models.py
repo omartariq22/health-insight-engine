@@ -1,0 +1,65 @@
+"""
+Data models for agent outputs.
+
+These dataclasses ensure type safety and provide clear structure
+for data passed between agents and stored in MongoDB.
+"""
+
+from dataclasses import dataclass, field, asdict
+from typing import Optional, List
+from datetime import datetime
+
+
+@dataclass
+class AnomalyReport:
+    """
+    Structured report of a detected anomaly for a single user.
+    
+    This is the output of Agent A (Data Analyst) and the input to Agent B (Health Coach).
+    """
+    user_id: str
+    metric: str  # 'steps', 'sleep_hours', or 'heart_rate'
+    
+    # Baseline period (7-day average)
+    baseline_avg: float
+    baseline_period: str  # e.g., '2026-04-05 to 2026-04-11'
+    
+    # Recent period (3-day average)
+    recent_avg: float
+    recent_period: str  # e.g., '2026-05-02 to 2026-05-04'
+    
+    # Drop analysis
+    drop_percentage: float  # e.g., 45.2 means 45.2% drop
+    severity: str  # 'moderate' (40-60%) or 'severe' (>60%)
+    
+    # Metadata
+    detected_at: str = field(default_factory=lambda: datetime.now().isoformat())
+    
+    def to_dict(self):
+        """Convert to dictionary for MongoDB storage."""
+        return asdict(self)
+    
+    def to_summary(self):
+        """Generate a human-readable summary string."""
+        return (
+            f"User {self.user_id}: {self.metric} dropped {self.drop_percentage:.1f}% "
+            f"({self.baseline_avg:.1f} → {self.recent_avg:.1f}) - {self.severity.upper()}"
+        )
+
+
+@dataclass
+class HealthRecommendation:
+    """
+    AI-generated health recommendation from Agent B.
+    
+    This is stored in MongoDB and displayed in the dashboard.
+    """
+    user_id: str
+    anomaly_report: dict
+    recommendation: str
+    rag_sources: List[str] = field(default_factory=list)
+    created_at: str = field(default_factory=lambda: datetime.now().isoformat())
+    
+    def to_dict(self):
+        """Convert to dictionary for MongoDB storage."""
+        return asdict(self)
