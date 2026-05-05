@@ -105,7 +105,7 @@ def generate_dataset():
     """Generate complete dataset with normal and anomaly users."""
     print("Generating simulated health data...")
     
-    start_date = datetime.now() - timedelta(days=NUM_DAYS)
+    start_date = datetime(2026, 4, 1)  # Fixed date for full reproducibility
     all_data = []
     
     # Generate data for all users
