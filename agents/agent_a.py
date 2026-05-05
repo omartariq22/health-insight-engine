@@ -37,7 +37,7 @@ def get_user_data(user_id: str) -> pd.DataFrame:
     Fetch all health logs for a specific user from MongoDB.
     
     Returns:
-        DataFrame with columns: user_id, date, steps, sleep_hours, heart_rate
+        DataFrame with columns: user_id, age, date, steps, sleep_hours, heart_rate
         Sorted by date ascending.
     """
     collection = get_collection(HEALTH_LOGS_COLLECTION)
@@ -100,6 +100,9 @@ def detect_anomaly_for_user(user_id: str, min_days: int = 10) -> Optional[Anomal
     if len(df) < min_days:
         return None
     
+    # Get user age (same for all records)
+    user_age = int(df['age'].iloc[0])
+    
     # Define windows
     recent_window = df.tail(3)  # Last 3 days
     baseline_window = df.iloc[-10:-3]  # Days 8-10 from end (7-day window)
@@ -123,6 +126,7 @@ def detect_anomaly_for_user(user_id: str, min_days: int = 10) -> Optional[Anomal
             # Create anomaly report
             report = AnomalyReport(
                 user_id=user_id,
+                age=user_age,
                 metric=metric,
                 baseline_avg=round(baseline_avg, 1),
                 baseline_period=f"{baseline_window['date'].iloc[0]} to {baseline_window['date'].iloc[-1]}",
@@ -184,7 +188,7 @@ def print_anomaly_report(anomalies: List[AnomalyReport]):
     print(f"{'='*70}\n")
     
     for i, report in enumerate(anomalies, 1):
-        print(f"{i}. {report.user_id}")
+        print(f"{i}. {report.user_id} (age {report.age})")
         print(f"   Metric:       {report.metric}")
         print(f"   Drop:         {report.drop_percentage:.1f}% ({report.severity.upper()})")
         print(f"   Baseline:     {report.baseline_avg:.1f} ({report.baseline_period})")

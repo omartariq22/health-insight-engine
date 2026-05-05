@@ -18,6 +18,7 @@ class AnomalyReport:
     This is the output of Agent A (Data Analyst) and the input to Agent B (Health Coach).
     """
     user_id: str
+    age: int  # User age for age-appropriate recommendations
     metric: str  # 'steps', 'sleep_hours', or 'heart_rate'
     
     # Baseline period (7-day average)
@@ -42,7 +43,7 @@ class AnomalyReport:
     def to_summary(self):
         """Generate a human-readable summary string."""
         return (
-            f"User {self.user_id}: {self.metric} dropped {self.drop_percentage:.1f}% "
+            f"User {self.user_id} (age {self.age}): {self.metric} dropped {self.drop_percentage:.1f}% "
             f"({self.baseline_avg:.1f} → {self.recent_avg:.1f}) - {self.severity.upper()}"
         )
 

@@ -42,7 +42,7 @@ def load_csv(filepath):
 
 def validate_dataframe(df):
     """Validate the DataFrame structure and data quality."""
-    expected_columns = ["user_id", "date", "steps", "sleep_hours", "heart_rate"]
+    expected_columns = ["user_id", "age", "date", "steps", "sleep_hours", "heart_rate"]
     errors = []
 
     # Check columns exist
@@ -60,6 +60,8 @@ def validate_dataframe(df):
         errors.append(f"Unexpected dtype for steps: {df['steps'].dtype}")
     if df["heart_rate"].dtype not in ["int64", "int32", "float64"]:
         errors.append(f"Unexpected dtype for heart_rate: {df['heart_rate'].dtype}")
+    if df["age"].dtype not in ["int64", "int32", "float64"]:
+        errors.append(f"Unexpected dtype for age: {df['age'].dtype}")
 
     # Check value ranges
     if (df["steps"] < 0).any():
@@ -68,6 +70,8 @@ def validate_dataframe(df):
         errors.append("Negative sleep hours found")
     if (df["heart_rate"] < 30).any() or (df["heart_rate"] > 220).any():
         errors.append("Heart rate values outside realistic range (30-220 bpm)")
+    if (df["age"] < 0).any() or (df["age"] > 120).any():
+        errors.append("Age values outside realistic range (0-120 years)")
 
     if errors:
         print("  [WARN] Validation issues:")
@@ -84,6 +88,7 @@ def preprocess_dataframe(df):
     # Ensure correct types for MongoDB compatibility
     df["steps"] = df["steps"].astype(int)
     df["heart_rate"] = df["heart_rate"].astype(int)
+    df["age"] = df["age"].astype(int)
     df["sleep_hours"] = df["sleep_hours"].astype(float)
     df["user_id"] = df["user_id"].astype(str)
     df["date"] = df["date"].astype(str)
@@ -131,6 +136,7 @@ def upload_to_mongodb(df):
     for record in records:
         record["steps"] = int(record["steps"])
         record["heart_rate"] = int(record["heart_rate"])
+        record["age"] = int(record["age"])
         record["sleep_hours"] = float(record["sleep_hours"])
 
     # Clear existing data to avoid duplicates on re-run
@@ -158,6 +164,7 @@ def save_metadata(df, output_path):
     """Save an enhanced metadata summary for LLM context."""
     # Per-user stats
     user_stats = df.groupby("user_id").agg(
+        age=("age", "first"),
         avg_steps=("steps", "mean"),
         avg_sleep=("sleep_hours", "mean"),
         avg_hr=("heart_rate", "mean"),
@@ -179,13 +186,19 @@ Days per User: {len(df) // df['user_id'].nunique()}
 COLUMNS:
 -----------
 1. user_id (string): Unique user identifier (format: user_XXX)
-2. date (string): Date in YYYY-MM-DD format
-3. steps (integer): Daily step count
-4. sleep_hours (float): Hours of sleep (rounded to 1 decimal)
-5. heart_rate (integer): Average heart rate in beats per minute (bpm)
+2. age (integer): User age in years (18-75)
+3. date (string): Date in YYYY-MM-DD format
+4. steps (integer): Daily step count
+5. sleep_hours (float): Hours of sleep (rounded to 1 decimal)
+6. heart_rate (integer): Average heart rate in beats per minute (bpm)
 
 GLOBAL STATISTICS:
 -----------
+Age:
+  Mean: {df['age'].mean():.0f}
+  Min:  {df['age'].min()}
+  Max:  {df['age'].max()}
+
 Steps:
   Mean: {df['steps'].mean():.0f}
   Std:  {df['steps'].std():.0f}
@@ -213,11 +226,12 @@ Avg HR Range:     {user_stats['avg_hr'].min():.0f} - {user_stats['avg_hr'].max()
 ANOMALIES:
 -----------
 10 users have intentional 40%+ activity drops for testing anomaly detection.
-These drops occur randomly between day 10-20 and last 3-7 days.
+These drops occur in the last 3-7 days to match the detection window.
 Anomaly users: user_001, user_002, user_003, user_004, user_005, user_006, user_007, user_008, user_009, user_010
 
 NOTES:
 -----------
+- Age-adjusted baselines: Younger users have higher activity, older users have lower activity
 - Weekend activity is ~30% lower than weekdays (built into simulation)
 - Anomaly users also show reduced sleep and elevated heart rate during drop periods
 - Data is suitable for rolling-window anomaly detection (compare last 3 days vs previous 7-day avg)

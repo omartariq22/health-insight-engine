@@ -1,5 +1,5 @@
 Dataset: Healthmov Health Logs
-Ingested: 2026-05-05 22:54:08
+Ingested: 2026-05-05 23:41:44
 Source: data/health_logs.csv
 
 STRUCTURE:
@@ -12,16 +12,22 @@ Days per User: 30
 COLUMNS:
 -----------
 1. user_id (string): Unique user identifier (format: user_XXX)
-2. date (string): Date in YYYY-MM-DD format
-3. steps (integer): Daily step count
-4. sleep_hours (float): Hours of sleep (rounded to 1 decimal)
-5. heart_rate (integer): Average heart rate in beats per minute (bpm)
+2. age (integer): User age in years (18-75)
+3. date (string): Date in YYYY-MM-DD format
+4. steps (integer): Daily step count
+5. sleep_hours (float): Hours of sleep (rounded to 1 decimal)
+6. heart_rate (integer): Average heart rate in beats per minute (bpm)
 
 GLOBAL STATISTICS:
 -----------
+Age:
+  Mean: 45
+  Min:  18
+  Max:  74
+
 Steps:
-  Mean: 7277
-  Std:  2338
+  Mean: 6906
+  Std:  2498
   Min:  0
   Max:  15852
 
@@ -29,28 +35,29 @@ Sleep Hours:
   Mean: 7.5
   Std:  1.0
   Min:  4.0
-  Max:  10.7
+  Max:  10.9
 
 Heart Rate:
-  Mean: 72
+  Mean: 73
   Std:  8
   Min:  50
   Max:  100
 
 PER-USER AVERAGES (summary):
 -----------
-Avg Steps Range:  6600 - 8278
-Avg Sleep Range:  7.1 - 7.8
-Avg HR Range:     70 - 76
+Avg Steps Range:  4402 - 8890
+Avg Sleep Range:  6.9 - 8.1
+Avg HR Range:     67 - 79
 
 ANOMALIES:
 -----------
 10 users have intentional 40%+ activity drops for testing anomaly detection.
-These drops occur randomly between day 10-20 and last 3-7 days.
+These drops occur in the last 3-7 days to match the detection window.
 Anomaly users: user_001, user_002, user_003, user_004, user_005, user_006, user_007, user_008, user_009, user_010
 
 NOTES:
 -----------
+- Age-adjusted baselines: Younger users have higher activity, older users have lower activity
 - Weekend activity is ~30% lower than weekdays (built into simulation)
 - Anomaly users also show reduced sleep and elevated heart rate during drop periods
 - Data is suitable for rolling-window anomaly detection (compare last 3 days vs previous 7-day avg)

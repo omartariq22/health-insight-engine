@@ -28,9 +28,10 @@ def create_collections(db):
             validator={
                 "$jsonSchema": {
                     "bsonType": "object",
-                    "required": ["user_id", "date", "steps", "sleep_hours", "heart_rate"],
+                    "required": ["user_id", "age", "date", "steps", "sleep_hours", "heart_rate"],
                     "properties": {
                         "user_id": {"bsonType": "string", "description": "Unique user identifier"},
+                        "age": {"bsonType": "int", "description": "User age in years"},
                         "date": {"bsonType": "string", "description": "Date in YYYY-MM-DD format"},
                         "steps": {"bsonType": "int", "description": "Daily step count"},
                         "sleep_hours": {"bsonType": "double", "description": "Hours of sleep"},
