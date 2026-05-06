@@ -22,7 +22,7 @@ random.seed(42)
 # Configuration
 NUM_USERS = 50
 NUM_DAYS = 30
-ANOMALY_USER_COUNT = 10  # Number of users with intentional activity drops
+ANOMALY_USER_COUNT = 10  # Number of users with intentional activity drops (20% of users)
 
 # Age ranges for realistic distribution
 AGE_MIN = 18
@@ -116,10 +116,11 @@ def generate_anomaly_user_data(user_id, age, start_date, num_days):
     # Get age-adjusted baselines
     baselines = get_age_adjusted_baselines(age)
     
-    # Choose when the drop occurs (in the last 3-7 days to match detection window)
-    # Detection looks at last 3 days, so drop should end within that window
-    drop_start_day = num_days - random.randint(3, 7)  # Start 3-7 days from end
-    drop_duration = random.randint(3, 5)  # Drop lasts 3-5 days
+    # Choose when the drop occurs - MUST be in the last 3 days (the "recent" window)
+    # Agent A compares last 3 days (recent) vs days -10 to -3 (baseline)
+    # So the drop must happen in the last 3 days to be detected
+    drop_start_day = num_days - 3  # Always start at day 27 (last 3 days)
+    drop_duration = 3  # Drop lasts exactly 3 days (the entire recent window)
     
     for day in range(num_days):
         date = start_date + timedelta(days=day)
@@ -128,13 +129,13 @@ def generate_anomaly_user_data(user_id, age, start_date, num_days):
         
         # Check if we're in the anomaly period
         if drop_start_day <= day < drop_start_day + drop_duration:
-            # Apply 40-60% drop in activity
-            drop_percentage = random.uniform(0.4, 0.6)
+            # Apply 50-80% drop in activity (increased from 40-60% for more dramatic detection)
+            drop_percentage = random.uniform(0.50, 0.80)
             steps_modifier *= (1 - drop_percentage)
             
             # Also reduce sleep slightly and increase heart rate (stress indicator)
-            sleep_modifier = 0.85
-            heart_rate_modifier = 1.1
+            sleep_modifier = 0.80  # More noticeable sleep reduction
+            heart_rate_modifier = 1.15  # More noticeable heart rate increase
         else:
             sleep_modifier = 1.0
             heart_rate_modifier = 1.0
