@@ -46,6 +46,7 @@ def get_collection(collection_name):
 # Collection name constants — use these everywhere to avoid typos
 HEALTH_LOGS_COLLECTION = "health_logs"
 HEALTH_ADVICE_COLLECTION = "health_advice"
+HEALTH_KNOWLEDGE_COLLECTION = "health_knowledge"
 
 
 def test_connection():
