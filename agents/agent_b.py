@@ -13,10 +13,15 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 import json
 import requests
+import time
 from datetime import datetime
 from database.connection import get_collection, HEALTH_ADVICE_COLLECTION
 from agents.models import AnomalyReport, HealthRecommendation
 from sentence_transformers import SentenceTransformer
+from database.logger import setup_logger, log_rag_query, log_recommendation_generated, log_error
+
+# Initialize logger
+logger = setup_logger("agent_b")
 
 KNOWLEDGE_BASE_COLLECTION = "health_knowledge"
 OLLAMA_URL = "http://localhost:11434/api/generate"
@@ -42,6 +47,9 @@ def build_rag_query(anomaly: AnomalyReport) -> str:
 
 def query_knowledge_base(query: str, top_k: int = 3) -> list:
     """Query MongoDB vector search for relevant health knowledge."""
+    logger.debug(f"Querying RAG knowledge base: '{query}'")
+    start_time = time.time()
+    
     collection = get_collection(KNOWLEDGE_BASE_COLLECTION)
     
     embedding = embedding_model.encode(query).tolist()
@@ -67,7 +75,13 @@ def query_knowledge_base(query: str, top_k: int = 3) -> list:
         }
     ])
     
-    return list(results)
+    results_list = list(results)
+    execution_time = time.time() - start_time
+    
+    # Log the RAG query
+    log_rag_query(logger, query, len(results_list), execution_time)
+    
+    return results_list
 
 
 # ──────────────────────────────────────────────
@@ -117,16 +131,28 @@ RECOMMENDATION:"""
 
 def call_ollama(prompt: str) -> str:
     """Call the local Ollama LLM and return the response."""
+    logger.debug("Calling Ollama LLM")
+    start_time = time.time()
+    
     payload = {
         "model": OLLAMA_MODEL,
         "prompt": prompt,
         "stream": False
     }
     
-    response = requests.post(OLLAMA_URL, json=payload, timeout=120)
-    response.raise_for_status()
-    
-    return response.json()["response"].strip()
+    try:
+        response = requests.post(OLLAMA_URL, json=payload, timeout=120)
+        response.raise_for_status()
+        
+        result = response.json()["response"].strip()
+        execution_time = time.time() - start_time
+        
+        logger.debug(f"Ollama response received ({len(result)} chars in {execution_time:.2f}s)")
+        return result
+        
+    except Exception as e:
+        log_error(logger, e, "Ollama LLM call")
+        raise
 
 
 # ──────────────────────────────────────────────
@@ -159,22 +185,35 @@ def save_recommendation(anomaly: AnomalyReport, recommendation: str, rag_sources
 def generate_recommendation(anomaly: AnomalyReport) -> str:
     """Full pipeline: RAG query → LLM generation → save to MongoDB."""
     print(f"\n  Processing {anomaly.user_id} ({anomaly.metric}, {anomaly.drop_percentage:.1f}% drop)")
+    logger.info(f"Processing recommendation for {anomaly.user_id}")
     
-    # Step 1: Query RAG
-    query = build_rag_query(anomaly)
-    rag_chunks = query_knowledge_base(query)
-    print(f"  [OK] Retrieved {len(rag_chunks)} RAG chunks")
+    start_time = time.time()
     
-    # Step 2: Build prompt and call LLM
-    prompt = build_prompt(anomaly, rag_chunks)
-    print(f"  Generating recommendation with Ollama...")
-    recommendation = call_ollama(prompt)
-    print(f"  [OK] Recommendation generated ({len(recommendation)} chars)")
-    
-    # Step 3: Save to MongoDB
-    save_recommendation(anomaly, recommendation, rag_chunks)
-    
-    return recommendation
+    try:
+        # Step 1: Query RAG
+        query = build_rag_query(anomaly)
+        rag_chunks = query_knowledge_base(query)
+        print(f"  [OK] Retrieved {len(rag_chunks)} RAG chunks")
+        
+        # Step 2: Build prompt and call LLM
+        prompt = build_prompt(anomaly, rag_chunks)
+        print(f"  Generating recommendation with Ollama...")
+        recommendation = call_ollama(prompt)
+        print(f"  [OK] Recommendation generated ({len(recommendation)} chars)")
+        
+        # Step 3: Save to MongoDB
+        save_recommendation(anomaly, recommendation, rag_chunks)
+        
+        execution_time = time.time() - start_time
+        
+        # Log the recommendation generation
+        log_recommendation_generated(logger, anomaly.user_id, len(recommendation), execution_time)
+        
+        return recommendation
+        
+    except Exception as e:
+        log_error(logger, e, f"generate_recommendation for {anomaly.user_id}")
+        raise
 
 
 def run_agent_b():
@@ -183,10 +222,13 @@ def run_agent_b():
     print("AGENT B: Health Coach (Recommendation Generator)")
     print("=" * 70)
     
+    logger.info("Agent B started")
+    
     # Load anomalies from Agent A output
     anomalies_path = os.path.join(os.path.dirname(__file__), "anomalies.json")
     if not os.path.exists(anomalies_path):
         print("[FAIL] anomalies.json not found. Run Agent A first.")
+        logger.error("anomalies.json not found")
         sys.exit(1)
     
     with open(anomalies_path, "r") as f:
@@ -194,9 +236,11 @@ def run_agent_b():
     
     anomalies_data = data.get("anomalies", [])
     print(f"\nLoaded {len(anomalies_data)} anomalies from Agent A")
+    logger.info(f"Loaded {len(anomalies_data)} anomalies from Agent A")
     
     if not anomalies_data:
         print("No anomalies to process.")
+        logger.info("No anomalies to process")
         return
     
     # Process each anomaly
@@ -226,6 +270,8 @@ def run_agent_b():
     print(f"\n{'='*70}")
     print(f"AGENT B COMPLETE: {len(results)} recommendations generated")
     print(f"{'='*70}\n")
+    
+    logger.info(f"Agent B complete: {len(results)} recommendations generated")
     
     for result in results:
         print(f"User: {result['user_id']}")

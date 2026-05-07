@@ -44,7 +44,7 @@ class AnomalyReport:
         """Generate a human-readable summary string."""
         return (
             f"User {self.user_id} (age {self.age}): {self.metric} dropped {self.drop_percentage:.1f}% "
-            f"({self.baseline_avg:.1f} → {self.recent_avg:.1f}) - {self.severity.upper()}"
+            f"({self.baseline_avg:.1f} -> {self.recent_avg:.1f}) - {self.severity.upper()}"
         )
 
 

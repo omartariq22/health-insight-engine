@@ -47,6 +47,7 @@ def get_collection(collection_name):
 HEALTH_LOGS_COLLECTION = "health_logs"
 HEALTH_ADVICE_COLLECTION = "health_advice"
 HEALTH_KNOWLEDGE_COLLECTION = "health_knowledge"
+SYSTEM_LOGS_COLLECTION = "system_logs"
 
 
 def test_connection():

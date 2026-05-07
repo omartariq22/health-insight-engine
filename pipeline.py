@@ -14,6 +14,7 @@ Pipeline Flow:
 
 import sys
 import os
+import time
 from typing import TypedDict, Literal
 from langgraph.graph import StateGraph, END
 
@@ -23,6 +24,10 @@ from agents.agent_b import generate_recommendation
 from agents.models import AnomalyReport
 from database.connection import test_connection, get_collection, HEALTH_LOGS_COLLECTION, HEALTH_ADVICE_COLLECTION
 from data.ingest import ingest_data
+from database.logger import setup_logger, log_pipeline_start, log_pipeline_complete, log_error
+
+# Initialize logger
+logger = setup_logger("pipeline")
 
 
 # ──────────────────────────────────────────────
@@ -264,41 +269,63 @@ def run_pipeline():
     print("HEALTHMOV INSIGHT ENGINE - MULTI-AGENT PIPELINE")
     print("="*70)
     print("\nPipeline Flow:")
-    print("  1. Ingest Data → Load health data into MongoDB")
-    print("  2. Detect Anomalies → Run Agent A")
-    print("  3. Check Anomalies → Decision point")
-    print("  4. Generate Recommendations → Run Agent B (if anomalies found)")
-    print("  5. Save Results → Verify MongoDB storage")
+    print("  1. Ingest Data -> Load health data into MongoDB")
+    print("  2. Detect Anomalies -> Run Agent A")
+    print("  3. Check Anomalies -> Decision point")
+    print("  4. Generate Recommendations -> Run Agent B (if anomalies found)")
+    print("  5. Save Results -> Verify MongoDB storage")
     print("\nStarting pipeline execution...\n")
     
-    # Build and run the pipeline
-    pipeline = build_pipeline()
+    # Log pipeline start
+    log_pipeline_start(logger, "Healthmov Multi-Agent Pipeline")
+    start_time = time.time()
     
-    # Initialize state
-    initial_state = PipelineState(
-        step="start",
-        anomalies=[],
-        recommendations=[],
-        total_users=0,
-        status="running",
-        message="Pipeline started"
-    )
-    
-    # Execute the pipeline
-    final_state = pipeline.invoke(initial_state)
-    
-    # Print final summary
-    print("\n" + "="*70)
-    print("PIPELINE EXECUTION SUMMARY")
-    print("="*70)
-    print(f"Status: {final_state['status'].upper()}")
-    print(f"Total Users: {final_state['total_users']}")
-    print(f"Anomalies Detected: {len(final_state['anomalies'])}")
-    print(f"Recommendations Generated: {len(final_state['recommendations'])}")
-    print(f"Message: {final_state['message']}")
-    print("="*70 + "\n")
-    
-    return final_state
+    try:
+        # Build and run the pipeline
+        pipeline = build_pipeline()
+        
+        # Initialize state
+        initial_state = PipelineState(
+            step="start",
+            anomalies=[],
+            recommendations=[],
+            total_users=0,
+            status="running",
+            message="Pipeline started"
+        )
+        
+        # Execute the pipeline
+        final_state = pipeline.invoke(initial_state)
+        
+        # Calculate total execution time
+        total_time = time.time() - start_time
+        
+        # Log pipeline completion
+        log_pipeline_complete(
+            logger,
+            "Healthmov Multi-Agent Pipeline",
+            total_time,
+            len(final_state['anomalies']),
+            len(final_state['recommendations'])
+        )
+        
+        # Print final summary
+        print("\n" + "="*70)
+        print("PIPELINE EXECUTION SUMMARY")
+        print("="*70)
+        print(f"Status: {final_state['status'].upper()}")
+        print(f"Total Users: {final_state['total_users']}")
+        print(f"Anomalies Detected: {len(final_state['anomalies'])}")
+        print(f"Recommendations Generated: {len(final_state['recommendations'])}")
+        print(f"Execution Time: {total_time:.2f}s")
+        print(f"Message: {final_state['message']}")
+        print("="*70 + "\n")
+        
+        return final_state
+        
+    except Exception as e:
+        log_error(logger, e, "Pipeline execution")
+        raise
 
 
 if __name__ == "__main__":

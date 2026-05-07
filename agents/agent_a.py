@@ -26,6 +26,10 @@ from typing import List, Optional
 from datetime import datetime
 from database.connection import get_collection, HEALTH_LOGS_COLLECTION, test_connection
 from agents.models import AnomalyReport
+from database.logger import setup_logger, log_anomaly_detection, log_mongodb_operation, log_error
+
+# Initialize logger
+logger = setup_logger("agent_a")
 
 
 # ──────────────────────────────────────────────
@@ -40,6 +44,7 @@ def get_user_data(user_id: str) -> pd.DataFrame:
         DataFrame with columns: user_id, age, date, steps, sleep_hours, heart_rate
         Sorted by date ascending.
     """
+    logger.debug(f"Fetching data for {user_id}")
     collection = get_collection(HEALTH_LOGS_COLLECTION)
     
     # Query MongoDB for this user's data
@@ -48,6 +53,7 @@ def get_user_data(user_id: str) -> pd.DataFrame:
     # Convert to DataFrame
     data = list(cursor)
     if not data:
+        logger.warning(f"No data found for {user_id}")
         return pd.DataFrame()
     
     df = pd.DataFrame(data)
@@ -59,6 +65,7 @@ def get_user_data(user_id: str) -> pd.DataFrame:
     # Ensure date is sorted
     df = df.sort_values("date").reset_index(drop=True)
     
+    logger.debug(f"Retrieved {len(df)} records for {user_id}")
     return df
 
 
@@ -98,6 +105,7 @@ def detect_anomaly_for_user(user_id: str, min_days: int = 10) -> Optional[Anomal
     
     # Need at least 10 days of data (7 baseline + 3 recent)
     if len(df) < min_days:
+        logger.debug(f"{user_id}: Insufficient data ({len(df)} days)")
         return None
     
     # Get user age (same for all records)
@@ -135,6 +143,9 @@ def detect_anomaly_for_user(user_id: str, min_days: int = 10) -> Optional[Anomal
                 drop_percentage=round(drop_pct, 1),
                 severity=severity,
             )
+            
+            # Log the anomaly detection
+            log_anomaly_detection(logger, user_id, metric, drop_pct, severity)
             
             anomalies.append((drop_pct, report))  # Store with drop_pct for sorting
     
@@ -176,7 +187,7 @@ def detect_all_anomalies() -> List[AnomalyReport]:
 def print_anomaly_report(anomalies: List[AnomalyReport]):
     """Print a formatted summary of all detected anomalies."""
     if not anomalies:
-        print("\n✓ No anomalies detected. All users have normal engagement patterns.")
+        print("\n[OK] No anomalies detected. All users have normal engagement patterns.")
         return
     
     print(f"\n{'='*70}")
@@ -210,7 +221,7 @@ def save_anomalies_to_file(anomalies: List[AnomalyReport], output_path: str = "a
     with open(output_path, "w") as f:
         json.dump(data, f, indent=2)
     
-    print(f"✓ Anomalies saved to {output_path}")
+    print(f"[OK] Anomalies saved to {output_path}")
 
 
 # ──────────────────────────────────────────────
@@ -223,13 +234,17 @@ def run_agent_a():
     print("AGENT A: Data Analyst (Anomaly Detector)")
     print("=" * 70)
     
+    logger.info("Agent A started")
+    
     # Step 1: Test connection
     print("\n1. Testing MongoDB connection...")
     result = test_connection()
     if result["status"] != "connected":
         print(f"  [FAIL] {result['error']}")
+        logger.error(f"MongoDB connection failed: {result['error']}")
         sys.exit(1)
     print(f"  [OK] Connected to MongoDB")
+    logger.info("MongoDB connection successful")
     
     # Step 2: Detect anomalies
     print("\n2. Detecting anomalies...")
@@ -241,6 +256,9 @@ def run_agent_a():
     # Step 4: Save to file
     if anomalies:
         save_anomalies_to_file(anomalies)
+        logger.info(f"Agent A complete: {len(anomalies)} anomalies detected and saved")
+    else:
+        logger.info("Agent A complete: No anomalies detected")
     
     print(f"\n{'='*70}")
     print(f"[OK] Agent A complete: {len(anomalies)} anomalies detected")
