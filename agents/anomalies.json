@@ -1,5 +1,5 @@
 {
-  "detection_time": "2026-05-07T03:47:12.502404",
+  "detection_time": "2026-05-07T11:17:40.418241",
   "total_users": 50,
   "anomalies_detected": 10,
   "anomalies": [
@@ -13,7 +13,7 @@
       "recent_period": "2026-04-28 to 2026-04-30",
       "drop_percentage": 62.1,
       "severity": "severe",
-      "detected_at": "2026-05-07T03:47:08.090006"
+      "detected_at": "2026-05-07T11:17:36.250790"
     },
     {
       "user_id": "user_002",
@@ -25,7 +25,7 @@
       "recent_period": "2026-04-28 to 2026-04-30",
       "drop_percentage": 54.2,
       "severity": "moderate",
-      "detected_at": "2026-05-07T03:47:08.236778"
+      "detected_at": "2026-05-07T11:17:36.391111"
     },
     {
       "user_id": "user_003",
@@ -37,7 +37,7 @@
       "recent_period": "2026-04-28 to 2026-04-30",
       "drop_percentage": 75.5,
       "severity": "severe",
-      "detected_at": "2026-05-07T03:47:08.381565"
+      "detected_at": "2026-05-07T11:17:36.488858"
     },
     {
       "user_id": "user_004",
@@ -49,7 +49,7 @@
       "recent_period": "2026-04-28 to 2026-04-30",
       "drop_percentage": 49.1,
       "severity": "moderate",
-      "detected_at": "2026-05-07T03:47:08.529493"
+      "detected_at": "2026-05-07T11:17:36.590686"
     },
     {
       "user_id": "user_005",
@@ -61,7 +61,7 @@
       "recent_period": "2026-04-28 to 2026-04-30",
       "drop_percentage": 78.0,
       "severity": "severe",
-      "detected_at": "2026-05-07T03:47:08.677185"
+      "detected_at": "2026-05-07T11:17:36.674635"
     },
     {
       "user_id": "user_006",
@@ -73,7 +73,7 @@
       "recent_period": "2026-04-28 to 2026-04-30",
       "drop_percentage": 78.0,
       "severity": "severe",
-      "detected_at": "2026-05-07T03:47:08.839332"
+      "detected_at": "2026-05-07T11:17:36.763056"
     },
     {
       "user_id": "user_007",
@@ -85,7 +85,7 @@
       "recent_period": "2026-04-28 to 2026-04-30",
       "drop_percentage": 47.6,
       "severity": "moderate",
-      "detected_at": "2026-05-07T03:47:09.012362"
+      "detected_at": "2026-05-07T11:17:36.854118"
     },
     {
       "user_id": "user_008",
@@ -97,7 +97,7 @@
       "recent_period": "2026-04-28 to 2026-04-30",
       "drop_percentage": 63.8,
       "severity": "severe",
-      "detected_at": "2026-05-07T03:47:09.181824"
+      "detected_at": "2026-05-07T11:17:36.942380"
     },
     {
       "user_id": "user_009",
@@ -109,7 +109,7 @@
       "recent_period": "2026-04-28 to 2026-04-30",
       "drop_percentage": 74.1,
       "severity": "severe",
-      "detected_at": "2026-05-07T03:47:09.325865"
+      "detected_at": "2026-05-07T11:17:37.025099"
     },
     {
       "user_id": "user_010",
@@ -121,7 +121,7 @@
       "recent_period": "2026-04-28 to 2026-04-30",
       "drop_percentage": 49.5,
       "severity": "moderate",
-      "detected_at": "2026-05-07T03:47:09.470214"
+      "detected_at": "2026-05-07T11:17:37.110365"
     }
   ]
 }
