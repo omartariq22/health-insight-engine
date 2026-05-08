@@ -1,5 +1,5 @@
 Dataset: Healthmov Health Logs
-Ingested: 2026-05-07 23:56:21
+Ingested: 2026-05-08 00:21:56
 Source: data/health_logs.csv
 
 STRUCTURE:
@@ -26,8 +26,8 @@ Age:
   Max:  74
 
 Steps:
-  Mean: 6887
-  Std:  2515
+  Mean: 6963
+  Std:  2461
   Min:  0
   Max:  15852
 

@@ -88,6 +88,15 @@ def query_knowledge_base(query: str, top_k: int = 3) -> list:
 # 2. Generate Recommendation with Ollama
 # ──────────────────────────────────────────────
 
+def get_user_name(user_id: str) -> str:
+    """Get the user's name from MongoDB."""
+    collection = get_collection("health_logs")
+    user_doc = collection.find_one({"user_id": user_id})
+    if user_doc and "user_name" in user_doc:
+        return user_doc["user_name"]
+    return user_id  # Fallback to user_id if name not found
+
+
 def build_prompt(anomaly: AnomalyReport, rag_chunks: list) -> str:
     """Build the prompt for the LLM."""
     rag_context = "\n\n".join([
@@ -95,15 +104,18 @@ def build_prompt(anomaly: AnomalyReport, rag_chunks: list) -> str:
         for chunk in rag_chunks
     ])
     
+    # Get user's actual name
+    user_name = get_user_name(anomaly.user_id)
+    
     metric_label = {
         "steps": "daily steps",
         "sleep_hours": "sleep duration",
         "heart_rate": "resting heart rate"
     }.get(anomaly.metric, anomaly.metric)
     
-    prompt = f"""You are a compassionate and motivational health coach working for Healthmov, a health and wellness app.
+    prompt = f"""You are a compassionate and motivational health coach named Omar Tarek working for Healthmov, a health and wellness app.
 
-A user named {anomaly.user_id} has shown a concerning drop in their health activity that suggests they may be disengaging from their wellness journey.
+A user named {user_name} has shown a concerning drop in their health activity that suggests they may be disengaging from their wellness journey.
 
 USER SITUATION:
 - Metric affected: {metric_label}
@@ -115,13 +127,15 @@ RELEVANT HEALTH KNOWLEDGE:
 {rag_context}
 
 YOUR TASK:
-Write a warm, personalized, and motivational health recommendation for {anomaly.user_id}. 
+Write a warm, personalized, and motivational health recommendation for {user_name}. 
 
-- Address them directly and acknowledge their situation
+- Address them by their first name directly and acknowledge their situation
 - Reference their specific metric and the drop you observed
 - Use the health knowledge provided to give scientifically-backed advice
 - Keep it concise (3-4 paragraphs)
 - End with an encouraging call to action
+- Sign off as "Omar Tarek, Health Coach, Healthmov"
+- Do NOT use placeholders like [Your Name] - always sign as Omar Tarek
 - Do NOT be generic — make it feel like it was written specifically for this person
 
 RECOMMENDATION:"""
@@ -250,6 +264,7 @@ def run_agent_b():
     for anomaly_dict in anomalies_data:
         anomaly = AnomalyReport(
             user_id=anomaly_dict["user_id"],
+            user_name=anomaly_dict.get("user_name", anomaly_dict["user_id"]),
             age=anomaly_dict["age"],
             metric=anomaly_dict["metric"],
             baseline_avg=anomaly_dict["baseline_avg"],

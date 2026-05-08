@@ -108,8 +108,9 @@ def detect_anomaly_for_user(user_id: str, min_days: int = 10) -> Optional[Anomal
         logger.debug(f"{user_id}: Insufficient data ({len(df)} days)")
         return None
     
-    # Get user age (same for all records)
+    # Get user age and name (same for all records)
     user_age = int(df['age'].iloc[0])
+    user_name = df['user_name'].iloc[0] if 'user_name' in df.columns else user_id
     
     # Define windows
     recent_window = df.tail(3)  # Last 3 days
@@ -123,31 +124,62 @@ def detect_anomaly_for_user(user_id: str, min_days: int = 10) -> Optional[Anomal
         baseline_avg = baseline_window[metric].mean()
         recent_avg = recent_window[metric].mean()
         
-        # Calculate drop percentage
-        drop_pct = ((baseline_avg - recent_avg) / baseline_avg) * 100
-        
-        # Check if drop is significant (40%+)
-        if drop_pct >= 40:
-            # Determine severity
-            severity = "severe" if drop_pct >= 60 else "moderate"
+        # For heart_rate, we detect INCREASES (higher is worse)
+        # For steps and sleep_hours, we detect DECREASES (lower is worse)
+        if metric == "heart_rate":
+            # Calculate increase percentage
+            increase_pct = ((recent_avg - baseline_avg) / baseline_avg) * 100
             
-            # Create anomaly report
-            report = AnomalyReport(
-                user_id=user_id,
-                age=user_age,
-                metric=metric,
-                baseline_avg=round(baseline_avg, 1),
-                baseline_period=f"{baseline_window['date'].iloc[0]} to {baseline_window['date'].iloc[-1]}",
-                recent_avg=round(recent_avg, 1),
-                recent_period=f"{recent_window['date'].iloc[0]} to {recent_window['date'].iloc[-1]}",
-                drop_percentage=round(drop_pct, 1),
-                severity=severity,
-            )
+            # Check if increase is significant (40%+)
+            if increase_pct >= 40:
+                # Determine severity
+                severity = "severe" if increase_pct >= 60 else "moderate"
+                
+                # Create anomaly report
+                report = AnomalyReport(
+                    user_id=user_id,
+                    user_name=user_name,
+                    age=user_age,
+                    metric=metric,
+                    baseline_avg=round(baseline_avg, 1),
+                    baseline_period=f"{baseline_window['date'].iloc[0]} to {baseline_window['date'].iloc[-1]}",
+                    recent_avg=round(recent_avg, 1),
+                    recent_period=f"{recent_window['date'].iloc[0]} to {recent_window['date'].iloc[-1]}",
+                    drop_percentage=round(increase_pct, 1),  # Using same field for consistency
+                    severity=severity,
+                )
+                
+                # Log the anomaly detection
+                log_anomaly_detection(logger, user_id, metric, increase_pct, severity)
+                
+                anomalies.append((increase_pct, report))
+        else:
+            # Calculate drop percentage for steps and sleep_hours
+            drop_pct = ((baseline_avg - recent_avg) / baseline_avg) * 100
             
-            # Log the anomaly detection
-            log_anomaly_detection(logger, user_id, metric, drop_pct, severity)
-            
-            anomalies.append((drop_pct, report))  # Store with drop_pct for sorting
+            # Check if drop is significant (40%+)
+            if drop_pct >= 40:
+                # Determine severity
+                severity = "severe" if drop_pct >= 60 else "moderate"
+                
+                # Create anomaly report
+                report = AnomalyReport(
+                    user_id=user_id,
+                    user_name=user_name,
+                    age=user_age,
+                    metric=metric,
+                    baseline_avg=round(baseline_avg, 1),
+                    baseline_period=f"{baseline_window['date'].iloc[0]} to {baseline_window['date'].iloc[-1]}",
+                    recent_avg=round(recent_avg, 1),
+                    recent_period=f"{recent_window['date'].iloc[0]} to {recent_window['date'].iloc[-1]}",
+                    drop_percentage=round(drop_pct, 1),
+                    severity=severity,
+                )
+                
+                # Log the anomaly detection
+                log_anomaly_detection(logger, user_id, metric, drop_pct, severity)
+                
+                anomalies.append((drop_pct, report))
     
     # Return the most severe anomaly (highest drop percentage)
     if anomalies:
