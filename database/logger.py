@@ -25,7 +25,7 @@ from database.connection import get_collection
 
 # Constants
 LOGS_COLLECTION = "system_logs"
-LOG_DIR = "logs"
+LOG_DIR = r"C:\Users\amoor\Documents\health-insight-engine\logs"
 LOG_FILE = os.path.join(LOG_DIR, "healthmov.log")
 
 
