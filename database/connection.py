@@ -6,16 +6,19 @@ will import instead of creating their own connections.
 """
 
 import os
+from pathlib import Path
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from project root
+project_root = Path(__file__).parent.parent
+env_path = project_root / '.env'
+load_dotenv(dotenv_path=env_path)
 
 # MongoDB configuration
 MONGODB_URI = os.getenv("MONGODB_URI")
-MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "healthmov_insight")
+MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "healthmov")
 
 # Singleton client instance
 _client = None

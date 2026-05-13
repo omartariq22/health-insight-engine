@@ -1,64 +1,63 @@
-Dataset: Health Logs
+Dataset: Healthmov Health Logs
+Ingested: 2026-05-13 16:51:49
+Source: data/health_logs.csv
 
 STRUCTURE:
 -----------
 Total Records: 1500
 Total Users: 50
+Date Range: 2026-04-01 to 2026-04-30
 Days per User: 30
 
 COLUMNS:
 -----------
 1. user_id (string): Unique user identifier (format: user_XXX)
-2. user_name (string): User's full name
-3. age (integer): User's age
-4. date (string): Date in YYYY-MM-DD format
-5. steps (integer): Daily step count
-6. sleep_hours (float): Hours of sleep (rounded to 1 decimal)
-7. heart_rate (integer): Average heart rate in beats per minute (bpm)
+2. age (integer): User age in years (18-75)
+3. date (string): Date in YYYY-MM-DD format
+4. steps (integer): Daily step count
+5. sleep_hours (float): Hours of sleep (rounded to 1 decimal)
+6. heart_rate (integer): Average heart rate in beats per minute (bpm)
 
-STATISTICS:
+GLOBAL STATISTICS:
 -----------
+Age:
+  Mean: 45
+  Min:  18
+  Max:  74
+
 Steps:
-  Mean: ~8000
-  Std: ~2000
-  Min: 0
-  Max: ~16000
+  Mean: 6963
+  Std:  2461
+  Min:  0
+  Max:  15852
 
 Sleep Hours:
   Mean: 7.5
-  Std: 1.0
-  Min: 4.0
-  Max: 12.0
+  Std:  1.0
+  Min:  4.0
+  Max:  10.9
 
 Heart Rate:
-  Mean: 72
-  Std: 8
-  Min: 50
-  Max: 100
+  Mean: 73
+  Std:  8
+  Min:  50
+  Max:  100
 
-Age Distribution:
-  Range: 18-75 years
-  Groups: 18-30, 31-50, 51-75
+PER-USER AVERAGES (summary):
+-----------
+Avg Steps Range:  4402 - 8890
+Avg Sleep Range:  6.9 - 8.1
+Avg HR Range:     67 - 79
 
 ANOMALIES:
 -----------
-5 users have intentional anomalies for testing anomaly detection.
-These anomalies occur in the last 3 days of the dataset (days 28-30).
-Drop percentage: 50-80% for the affected metric.
-
-Anomaly users:
-- user_005 (Jessica Martinez): steps anomaly
-- user_012 (Matthew Jackson): sleep_hours anomaly
-- user_015 (Stephanie Martin): steps anomaly
-- user_023 (Samantha Hall): heart_rate anomaly (increase)
-- user_028 (Amber Lopez): sleep_hours anomaly
-
-Detection Rate: 10% (5 out of 50 users)
+10 users have intentional 40%+ activity drops for testing anomaly detection.
+These drops occur in the last 3-7 days to match the detection window.
+Anomaly users: user_001, user_002, user_003, user_004, user_005, user_006, user_007, user_008, user_009, user_010
 
 NOTES:
 -----------
-- All users have realistic names (50 unique names)
-- Age-adjusted baselines for health metrics
-- Weekend effect: 30% reduction in steps on weekends
-- Anomalies are diverse across different metrics (steps, sleep, heart rate)
-- Heart rate anomalies are INCREASES (not decreases) indicating stress
+- Age-adjusted baselines: Younger users have higher activity, older users have lower activity
+- Weekend activity is ~30% lower than weekdays (built into simulation)
+- Anomaly users also show reduced sleep and elevated heart rate during drop periods
+- Data is suitable for rolling-window anomaly detection (compare last 3 days vs previous 7-day avg)
