@@ -27,59 +27,11 @@ Healthmov Insight Engine analyzes 30 days of user health data (steps, sleep, hea
 
 ## System Architecture
 
-```mermaid
-graph TB
-    subgraph "Data Layer"
-        CSV[CSV Health Data<br/>1500 records<br/>50 users × 30 days]
-        MongoDB[(MongoDB Atlas<br/>4 Collections<br/>health_logs, anomalies,<br/>health_advice, knowledge_base)]
-    end
-    
-    subgraph "Orchestration Layer"
-        Pipeline[LangGraph Pipeline<br/>5-Step Workflow<br/>Ingest → Detect → Check → Generate → Save]
-    end
-    
-    subgraph "Agent Layer"
-        AgentA[Agent A: Data Analyst<br/>Anomaly Detection<br/>Statistical Analysis<br/>40%+ Drop Detection]
-        AgentB[Agent B: Health Coach<br/>Recommendation Generation<br/>RAG + LLM Integration<br/>Personalized Advice]
-    end
-    
-    subgraph "AI Layer"
-        RAG[RAG System<br/>Vector Search<br/>Knowledge Base<br/>Sentence Transformers]
-        LLM[Ollama LLM<br/>llama3.2<br/>Local Inference<br/>Privacy-First]
-    end
-    
-    subgraph "API Layer"
-        FastAPI[FastAPI Backend<br/>7 REST Endpoints<br/>localhost:8000]
-        MCP[MCP Server<br/>3 AI Tools<br/>Claude Integration]
-    end
-    
-    subgraph "Frontend Layer"
-        React[React Dashboard<br/>Vercel Deployment<br/>Real-time Display]
-        Claude[Claude Desktop<br/>MCP Client<br/>AI Assistant]
-    end
-    
-    CSV -->|Ingest| MongoDB
-    MongoDB -->|Query| Pipeline
-    Pipeline -->|Orchestrate| AgentA
-    AgentA -->|Anomaly Reports| AgentB
-    AgentB -->|Query| RAG
-    RAG -->|Context| LLM
-    LLM -->|Recommendation| AgentB
-    AgentB -->|Save| MongoDB
-    MongoDB -->|REST API| FastAPI
-    MongoDB -->|Direct Access| MCP
-    FastAPI -->|HTTP| React
-    MCP -->|Tools| Claude
-    
-    style AgentA fill:#ff6b6b,stroke:#c92a2a,stroke-width:2px
-    style AgentB fill:#4ecdc4,stroke:#0b7285,stroke-width:2px
-    style RAG fill:#ffe66d,stroke:#f59f00,stroke-width:2px
-    style LLM fill:#a8e6cf,stroke:#2f9e44,stroke-width:2px
-    style MongoDB fill:#95e1d3,stroke:#0c8599,stroke-width:2px
-    style Pipeline fill:#ffd3b6,stroke:#e8590c,stroke-width:2px
-```
+![System Architecture](screenshots/healthmov_architecture_flow.svg)
 
 ### Pipeline Flow
+
+![LangGraph Workflow](screenshots/langgraph_workflow.png)
 
 **5-Step LangGraph Workflow:**
 
@@ -165,6 +117,8 @@ cd ..
 python pipeline.py
 ```
 
+![Pipeline Output](screenshots/pipeline_output.png)
+
 **Output:**
 ```
 ======================================================================
@@ -198,24 +152,20 @@ Execution Time: 86.49s
 ### Start API Server
 
 ```bash
-cd backend
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+python -m uvicorn backend.main:app --reload
 ```
 
-API available at: `http://localhost:8000`
+The backend runs locally to support the Vercel-deployed frontend.
 
-### Start React Dashboard
+### View Dashboard
 
-```bash
-cd frontend-react
-npm start
-```
-
-Dashboard opens at: `http://localhost:3000`
+Visit: **https://health-insight-engine.vercel.app**
 
 ---
 
 ## MCP Integration
+
+![MCP Demo](screenshots/mcp_chat1.png)
 
 ### Available Tools
 
@@ -249,7 +199,7 @@ Restart Claude Desktop and ask:
 
 ## API Endpoints
 
-**Base URL:** `http://localhost:8000`
+The FastAPI backend provides REST endpoints for the Vercel frontend.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -295,6 +245,10 @@ health-insight-engine/
 
 **Live Demo:** https://health-insight-engine.vercel.app
 
+![Dashboard](screenshots/dashboard1.png)
+
+![Recommendation Modal](screenshots/recommendation.png)
+
 **Features:**
 - Anomaly cards with severity indicators
 - Real-time statistics (total users, severe/moderate anomalies)
@@ -302,7 +256,7 @@ health-insight-engine/
 - One-click pipeline execution
 - Responsive mobile-friendly design
 
-**Note:** Backend must be running locally at `http://localhost:8000`
+**Note:** Backend must be running locally to support the Vercel frontend.
 
 ---
 
