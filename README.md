@@ -79,29 +79,20 @@ Healthmov Insight Engine analyzes 30 days of user health data (steps, sleep, hea
 ### Setup
 
 ```bash
-# Clone repository
 git clone https://github.com/omartariq22/health-insight-engine.git
 cd health-insight-engine
 
-# Create virtual environment
 python -m venv venv
-venv\Scripts\activate  # Windows
-# source venv/bin/activate  # macOS/Linux
+venv\Scripts\activate  
 
-# Install dependencies
 pip install -r requirements.txt
 
-# Configure environment
-# Create .env file with: MONGODB_URI=mongodb+srv://...
-
-# Install Ollama and pull model
 ollama pull llama3.2
 
-# Initialize database
 python database/setup.py
+
 python rag/build_knowledge_base.py
 
-# Install frontend dependencies
 cd frontend-react
 npm install
 cd ..
